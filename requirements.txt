@@ -2,3 +2,4 @@ fastapi
 boto3
 mangum
 uvicorn  # optional, useful for local testing
+python-multipart  # for handling multipart/form-data

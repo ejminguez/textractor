@@ -32,6 +32,9 @@ def insert_text_into_dynamodb(text: str):
     }
     dynamo_table.put_item(Item=item)
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Document Text Extractor API!"}
 
 @app.post("/upload")
 
