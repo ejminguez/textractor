@@ -50,7 +50,7 @@ async def upload_file(file: UploadFile):
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": "Content-Type",
             "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
-        }
+        },
         "preview": extracted_text[:100] + "..."
     }
 

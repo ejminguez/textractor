@@ -50,6 +50,7 @@ provider:
       - "multipart/form-data"
       - "application/octet-stream"
       - "application/pdf"
+  stackTerminationProtection: false
 
 functions:
   app:
