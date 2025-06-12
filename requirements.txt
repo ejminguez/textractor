@@ -1,0 +1,4 @@
+fastapi
+boto3
+mangum
+uvicorn  # optional, useful for local testing

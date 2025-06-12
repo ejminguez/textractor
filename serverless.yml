@@ -1,0 +1,30 @@
+service: textract-dynamodb-service
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: ap-southeast-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - textract:DetectDocumentText
+            - dynamodb:PutItem
+          Resource:
+            - arn:aws:dynamodb:ap-southeast-1:*:table/ExtractedDocuments
+
+functions:
+  app:
+    handler: main.handler
+    events:
+      - http:
+          path: /upload
+          method: post
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
