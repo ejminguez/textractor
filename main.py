@@ -19,13 +19,10 @@ dynamo_table = dynamodb.Table('ExtractedDocuments')
 def extract_text_from_textract(file_path: str):
     with open(file_path, 'rb') as doc:
         response = textract_client.detect_document_text(Document={'Bytes': doc.read()})
-
     return " ".join([block["Text"] for block in response["Blocks"] if block["BlockType"] == "LINE"])
 
 def insert_text_into_dynamodb(text: str):
-
     item = {
-
         'document_id': str(uuid.uuid4()),
         'extracted_text': text,
         'uploaded_at': datetime.utcnow().isoformat()
@@ -37,27 +34,24 @@ def read_root():
     return {"message": "Welcome to the Document Text Extractor API!"}
 
 @app.post("/upload")
-
 async def upload_file(file: UploadFile):
     with NamedTemporaryFile(delete=False, dir="/tmp") as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
 
-
     extracted_text = extract_text_from_textract(tmp_path)
     insert_text_into_dynamodb(extracted_text)
-
     os.remove(tmp_path)
 
-
     return {
-
         "status": "success",
+        "status_code": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+        }
         "preview": extracted_text[:100] + "..."
     }
 
-
-# 👇 This is the Lambda handler
-
 handler = Mangum(app)
-

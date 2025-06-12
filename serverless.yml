@@ -27,16 +27,14 @@ provider:
   name: aws
   runtime: python3.12
   region: ap-southeast-1
-  profile: dev-arallink
+  profile: dev-textractor
   iam:
     role:
       statements:
         - Effect: Allow
           Action:
             - dynamodb:PutItem
-
             - textract:DetectDocumentText
-
           Resource: "*"
       managedPolicies:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
@@ -47,6 +45,11 @@ provider:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+  apiGateway:
+    binaryMediaTypes:
+      - "multipart/form-data"
+      - "application/octet-stream"
+      - "application/pdf"
 
 functions:
   app:
@@ -63,10 +66,6 @@ functions:
       - http:
           path: /upload
           method: post
-          cors: true
-      - http:
-          path: /{proxy+}
-          method: any
           cors:
             origin: "*"
             headers:
@@ -77,12 +76,15 @@ functions:
               - X-Amz-Security-Token
               - X-Forwarded-For
               - X-Forwarded-Port
-              - X-Forwarded-Proto
               - Accept
               - Origin
               - Referer
               - User-Agent
             allowCredentials: false
+      - http:
+          path: /{proxy+}
+          method: any
+          cors: true
 
 package:
   individually: false
