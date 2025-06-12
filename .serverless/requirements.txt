@@ -1,0 +1,5 @@
+boto3
+fastapi
+mangum
+python-multipart  # for handling multipart/form-data
+uvicorn  # optional, useful for local testing

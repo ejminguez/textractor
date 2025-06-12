@@ -1,30 +1,93 @@
-service: textract-dynamodb-service
+service: textractor
+
+frameworkVersion: "4"
+
+custom:
+  stage: ${opt:stage, 'development'}
+  pythonRequirements:
+    fileName: requirements.txt
+    dockerizePip: linux
+    no-deploy:
+      - boto3
+      - botocore
+    layer:
+      name: textractor-${self:custom.stage}-python-requirements
+      compatibleRuntimes:
+        - python3.12
+    useDownloadCache: false
+    useStaticCache: false
+    slim: true
+
+    slimPatternsAppendDefaults: false
+    slimPatterns:
+      - "/*.py[c|o]"
+      - "/pycache*"
 
 provider:
   name: aws
-  runtime: python3.11
+  runtime: python3.12
   region: ap-southeast-1
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - textract:DetectDocumentText
-            - dynamodb:PutItem
-          Resource:
-            - arn:aws:dynamodb:ap-southeast-1:*:table/ExtractedDocuments
+  profile: dev-textractor
+  timeout: 30
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - textract:DetectDocumentText
+        - dynamodb:PutItem
+      Resource: arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/ExtractedDocuments
 
 functions:
   app:
+    name: ${self:service}-${self:custom.stage}-app
     handler: main.handler
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+
     events:
+      - http:
+          path: /
+          method: get
+          cors: true
       - http:
           path: /upload
           method: post
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: any
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Forwarded-For
+              - X-Forwarded-Port
+              - X-Forwarded-Proto
+              - Accept
+              - Origin
+              - Referer
+              - User-Agent
+            allowCredentials: false
+
+package:
+  individually: false
+  include:
+    - main.py
+  exclude:
+    - requirements.txt
+    - "**/__pycache__/**"
+    - "**/*.pyc"
+    - .venv/**
+    - node_modules/**
+    - .DS_Store
+    - .serverless/**
+    - .idea/**
+    - README.md
+    - .env.*
 
 plugins:
   - serverless-python-requirements
-
-custom:
-  pythonRequirements:
-    dockerizePip: true

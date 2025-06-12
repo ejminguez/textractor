@@ -8,7 +8,7 @@ from datetime import datetime
 from mangum import Mangum  # 🧠 ASGI -> Lambda adapter
 
 
-app = FastAPI()
+app = FastAPI(root_path="/dev")
 
 # AWS clients
 textract_client = boto3.client('textract')
