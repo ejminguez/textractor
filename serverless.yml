@@ -27,15 +27,26 @@ provider:
   name: aws
   runtime: python3.12
   region: ap-southeast-1
-  profile: dev-textractor
-  timeout: 30
+  profile: dev-arallink
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - textract:DetectDocumentText
-        - dynamodb:PutItem
-      Resource: arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/ExtractedDocuments
+            - textract:DetectDocumentText
+
+          Resource: "*"
+      managedPolicies:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      assumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
 
 functions:
   app:
